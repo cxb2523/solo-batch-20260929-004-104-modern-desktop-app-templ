@@ -59,7 +59,10 @@
     "preinstall": "pnpm add -g add sloc @tauri-apps/cli",
     "sloc": "sloc src src-tauri/src",
     "upgrade": "concurrently \"pnpm up\" \"cd src-tauri && cargo update && cargo clean\"",
-    "test": "mocha"
+    "pretest": "pnpm build",
+    "test": "pnpm run test:backend && pnpm run test:e2e",
+    "test:backend": "cargo test --manifest-path src-tauri/Cargo.toml -- --nocapture",
+    "test:e2e": "mocha"
   },
   "eslintConfig": {
     "extends": [

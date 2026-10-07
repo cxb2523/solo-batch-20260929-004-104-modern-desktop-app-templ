@@ -2,7 +2,7 @@ use serde::Serialize;
 use std::sync::Mutex;
 use tauri::menu::{Menu, MenuBuilder, MenuItemBuilder, SubmenuBuilder};
 use tauri::tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent};
-use tauri::{self, command, Emitter, Manager, Runtime};
+use tauri::{self, Emitter, Manager, Runtime};
 
 #[derive(Clone, Serialize)]
 pub struct IconTrayPayload {
@@ -54,7 +54,7 @@ pub fn create_tray_menu<R: Runtime>(
     .build()
 }
 
-static TRAY_ID: &'static str = "main";
+pub(crate) static TRAY_ID: &'static str = "main";
 
 pub fn create_tray_icon(app: &tauri::AppHandle) -> Result<TrayIcon, tauri::Error> {
   TrayIconBuilder::with_id(TRAY_ID)
@@ -140,13 +140,4 @@ pub fn create_tray_icon(app: &tauri::AppHandle) -> Result<TrayIcon, tauri::Error
       }
     })
     .build(app)
-}
-
-#[command]
-#[allow(unused_must_use)]
-pub fn tray_update_lang(app: tauri::AppHandle, lang: String) {
-  let tray_handle = app.tray_by_id(TRAY_ID);
-  if let Some(t) = tray_handle {
-    t.set_menu(create_tray_menu(&app, lang).ok());
-  }
 }

@@ -6,16 +6,14 @@
     "linux"
   ],
   "windows": [
-    "main"
+    "*"
   ],
   "permissions": [
     "updater:default",
     "store:default",
-    "autostart:default",
     "opener:default",
-    "autostart:default",
     "log:default",
-		"core:window:allow-toggle-maximize",
-		"fs:allow-download-write-recursive"
+    "core:window:allow-toggle-maximize",
+    "fs:allow-download-write-recursive"
   ]
 }

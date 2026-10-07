@@ -15,10 +15,11 @@ use tauri::{
 use tauri_plugin_store;
 use tauri_plugin_window_state;
 
+mod commands;
 mod tray_icon;
 mod utils;
 
-use tray_icon::{TrayState, create_tray_icon, tray_update_lang};
+use tray_icon::{TrayState, create_tray_icon};
 use utils::long_running_thread;
 
 #[derive(Clone, Serialize)]
@@ -27,20 +28,8 @@ struct SingleInstancePayload {
   cwd: String,
 }
 
-#[derive(Debug, Default, Serialize)]
-struct Example<'a> {
-  #[serde(rename = "Attribute 1")]
-  attribute_1: &'a str,
-}
-
 #[cfg(target_os = "linux")]
 pub struct DbusState(Mutex<Option<dbus::blocking::SyncConnection>>);
-
-#[tauri::command]
-fn process_file(filepath: String) -> String {
-  println!("Processing file: {}", filepath);
-  "Hello from Rust!".into()
-}
 
 #[cfg(target_os = "linux")]
 unsafe fn webkit_hidpi_workaround() {
@@ -70,7 +59,8 @@ pub fn run() {
     ));
   }
 
-  tauri::Builder::default()
+  let builder = commands::attach_invoke_handler(tauri::Builder::default());
+  builder
     .plugin(log_builder.build())
     .plugin(tauri_plugin_opener::init())
     .plugin(tauri_plugin_store::Builder::new().build())
@@ -81,8 +71,6 @@ pub fn run() {
     .plugin(tauri_plugin_notification::init())
     .plugin(tauri_plugin_shell::init())
     .plugin(tauri_plugin_fs::init())
-    // custom commands
-    .invoke_handler(tauri::generate_handler![tray_update_lang, process_file,])
     // allow only one instance and propagate args and cwd to existing instance
     .plugin(tauri_plugin_single_instance::init(|app, args, cwd| {
       app
@@ -96,6 +84,8 @@ pub fn run() {
     .plugin(tauri_plugin_window_state::Builder::default().build())
     // custom setup code
     .setup(|app| {
+      // Assemble the command contract once; every window reads the same state.
+      commands::install_managed_state(app.handle());
       let _ = create_tray_icon(app.handle());
       app.manage(Mutex::new(TrayState::NotPlaying));
 

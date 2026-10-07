@@ -3,10 +3,13 @@
   "description": "permissions that were migrated from v1",
   "local": true,
   "windows": [
-    "main"
+    "*"
   ],
   "permissions": [
     "core:default",
+    "core:event:default",
+    "core:window:allow-show",
+    "core:window:allow-set-focus",
     "fs:allow-write-file",
     "fs:allow-read-dir",
     "fs:allow-mkdir",
@@ -26,28 +29,14 @@
     "core:window:allow-set-decorations",
     "core:window:allow-set-size",
     "core:window:allow-set-fullscreen",
-    "core:window:allow-set-focus",
     "core:window:allow-start-dragging",
     "shell:allow-open",
-    "dialog:allow-message",
     "notification:default",
-    "os:allow-platform",
-    "os:allow-version",
-    "os:allow-os-type",
-    "os:allow-family",
-    "os:allow-arch",
-    "os:allow-exe-extension",
-    "os:allow-locale",
-    "os:allow-hostname",
-    "process:allow-restart",
     "fs:default",
     "shell:default",
-    "notification:default",
     "os:default",
     "dialog:default",
     "process:default",
-    "store:default",
-    "opener:default",
-    "log:default"
+    "process:allow-restart"
   ]
 }

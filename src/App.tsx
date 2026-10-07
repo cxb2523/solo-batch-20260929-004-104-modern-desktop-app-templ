@@ -13,20 +13,30 @@ import { useTranslation } from 'react-i18next';
 import { BsMoonStarsFill } from 'react-icons/bs';
 import { ImCross } from 'react-icons/im';
 import { IoSunnySharp } from 'react-icons/io5';
-import { Navigate, NavLink, Route, Routes } from 'react-router-dom';
+import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import SimpleBar from 'simplebar-react';
 import 'simplebar-react/dist/simplebar.min.css';
 import classes from './App.module.css';
 import { fmtError, useCookie, useLocalForage } from './common/utils';
 import LanguageHeaders from './components/LanguageHeaders';
 import { ScrollToTop } from './components/ScrollToTop';
+import { THEME_CHANGED_EVENT, ThemeMode, backendContractAvailable, contractApi } from './tauri/contract';
 import { useTauriContext } from './tauri/TauriProvider';
 import { TitleBar } from './tauri/TitleBar';
+import DiagnosticsView from './views/DiagnosticsView';
 import ExampleView from './views/ExampleView';
 import FallbackAppRender from './views/FallbackErrorBoundary';
 import FallbackSuspense from './views/FallbackSuspense';
 // if some views are large, you can use lazy loading to reduce the initial app load time
 const LazyView = lazy(() => import('./views/LazyView'));
+
+// Newly opened windows point at `index.html?view=<path>`; resolve it once so
+// a secondary window can land directly on the diagnostics panel.
+function EntryRedirect({ fallback }: { fallback: string }) {
+	const location = useLocation();
+	const view = new URLSearchParams(location.search).get('view');
+	return <Navigate to={view ? `/${view.replace(/^\/+/, '')}` : fallback} replace />;
+}
 
 // imported views need to be added to the `views` list variable
 interface View {
@@ -44,6 +54,7 @@ export default function () {
 	// left sidebar
 	const views: View[] = [
 		{ component: ExampleView, path: '/example-view', name: t('ExampleView') },
+		{ component: DiagnosticsView, path: '/diagnostics', name: t('Diagnostics Panel') },
 		{ component: () => <Text>Woo, routing works</Text>, path: '/example-view-2', name: 'Test Routing' },
 		{ component: LazyView, path: '/lazy-view', name: 'Lazy Load' }
 		// Other ways to add views to this array:
@@ -52,8 +63,36 @@ export default function () {
 	];
 
 	const { toggleColorScheme } = useMantineColorScheme();
+	const { setColorScheme } = useMantineColorScheme();
 	const colorScheme = useComputedColorScheme();
-	useHotkeys([['ctrl+J', toggleColorScheme]]);
+
+	const applyBackendTheme = (mode: ThemeMode) => {
+		if (mode === 'auto') setColorScheme('auto');
+		else setColorScheme(mode);
+	};
+
+	// Theme is a cross-domain concern owned by the backend: every window is a
+	// listener, so reopening a window or toggling in another window cannot lose
+	// the active appearance.
+	useEffect(() => {
+		if (!backendContractAvailable()) return;
+		contractApi.themeGet().then(applyBackendTheme).catch(console.error);
+		const unlistenPromise = tauriEvent.listen<{ mode: ThemeMode }>(THEME_CHANGED_EVENT, ({ payload }) =>
+			applyBackendTheme(payload.mode),
+		);
+		return () => { unlistenPromise.then(unlisten => unlisten()) };
+	}, []);
+
+	const toggleTheme = () => {
+		if (backendContractAvailable()) {
+			// Cycle light -> dark -> auto so `auto` remains reachable.
+			const next: ThemeMode = colorScheme === 'dark' ? 'light' : 'dark';
+			contractApi.themeSet(next).catch(console.error);
+		} else {
+			toggleColorScheme();
+		}
+	};
+	useHotkeys([['ctrl+J', toggleTheme]]);
 
 	// opened is for mobile nav
 	const [mobileNavOpened, { toggle: toggleMobileNav }] = useDisclosure();
@@ -188,7 +227,7 @@ export default function () {
 				<SimpleBar scrollableNodeProps={{ ref: setScroller }} autoHide={false} className={classes.simpleBar}>
 					<ErrorBoundary FallbackComponent={FallbackAppRender} /*onReset={_details => resetState()} */ onError={(error, info) => tauriLogger.error(`Render error: ${fmtError(error)}${info.componentStack ?? ''}`)}>
 						<Routes>
-							{views[0] !== undefined && <Route path='/' element={<Navigate to={views[0].path} />} />}
+							{views[0] !== undefined && <Route path='/' element={<EntryRedirect fallback={views[0].path} />} />}
 							{views.map((view, index) => <Route key={index} path={view.path} element={<Suspense fallback={<FallbackSuspense />}><view.component /></Suspense>} />)}
 						</Routes>
 					</ErrorBoundary>
@@ -205,7 +244,7 @@ export default function () {
 				</Group>
 				<Group className={classes.headerRightItems} h='110%'>
 					<LanguageHeaders />
-					<ActionIcon id='toggle-theme' title='Ctrl + J' variant='default' onClick={toggleColorScheme} size={30}>
+					<ActionIcon id='toggle-theme' title='Ctrl + J' variant='default' onClick={toggleTheme} size={30}>
 						{/* icon to show based on colorScheme */}
 						{colorScheme === 'dark' ? <IoSunnySharp size={'1.5em'} /> : <BsMoonStarsFill />}
 					</ActionIcon>

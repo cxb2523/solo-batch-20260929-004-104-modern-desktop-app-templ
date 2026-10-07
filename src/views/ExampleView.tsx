@@ -37,7 +37,7 @@ export default function ExampleView() {
 			await fs.writeTextFile('example_file.txt', 'oh this is from TAURI! COOLIO.\n', { baseDir: fs.BaseDirectory.Download });
 			// show in file explorer: https://github.com/tauri-apps/tauri/issues/4062
 			await shell.open(downloads!);
-			await invoke('process_file', { filepath: filePath }).then(msg => {
+			await invoke('file_process', { filepath: filePath }).then(msg => {
 				notify('Message from Rust', msg as string);
 				notifications.show({ title: 'Message from Rust', message: msg as string });
 			});

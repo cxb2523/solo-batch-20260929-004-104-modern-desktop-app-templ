@@ -64,5 +64,11 @@
       }
     ],
     "withGlobalTauri": false
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [],
+      "pubkey": ""
+    }
   }
 }

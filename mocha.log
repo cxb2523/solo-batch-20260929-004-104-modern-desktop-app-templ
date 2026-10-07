@@ -1,0 +1,128 @@
+﻿
+> r2-t2@0.2.5 test:e2e D:\gsb-auto\batches\batch-20260929-004\104-modern-desktop-app-templ\A
+> mocha
+
+
+
+INFO: building frontend
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+node.exe : (node:12360) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead t
+o security vulnerabilities, as the arguments are not escaped, only concatenated.
+At C:\Program Files\nodejs\pnpm.ps1:16 char:5
++     & "$basedir/node$exe"  "$basedir/node_modules/corepack/dist/pnpm. ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:12360) [D...y concatenated.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-deprecation ...` to show where the warning was created)
+INFO: frontend built
+INFO: building program (rust)
+   Compiling app v0.0.0 (D:\gsb-auto\batches\batch-20260929-004\104-modern-desktop-app-templ\A\src-tauri)
+warning: unused import: `ParamSpec`
+  --> src\commands\diagnostics.rs:16:3
+   |
+16 |   ParamSpec,
+   |   ^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `lang`
+  --> src\tray_icon.rs:29:3
+   |
+29 |   lang: String,
+   |   ^^^^ help: if this is intentional, prefix it with an underscore: `_lang`
+   |
+   = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+  --> src\lib.rs:50:7
+   |
+50 |   let mut log_builder = tauri_plugin_log::Builder::new().target(tauri_plugin_log::Target::new(
+   |       ----^^^^^^^^^^^
+   |       |
+   |       help: remove this `mut`
+   |
+   = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variant `Panic` is never constructed
+  --> src\commands\mod.rs:31:3
+   |
+27 | pub(crate) enum DuplicatePolicy {
+   |                 --------------- variant in this enum
+...
+31 |   Panic,
+   |   ^^^^^
+   |
+   = note: `DuplicatePolicy` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `required_flag` is never used
+  --> src\commands\mod.rs:90:6
+   |
+65 | impl ParamSpec {
+   | -------------- method in this implementation
+...
+90 |   fn required_flag(&self) -> bool {
+   |      ^^^^^^^^^^^^^
+
+warning: methods `kind` and `command` are never used
+   --> src\commands\mod.rs:142:17
+    |
+127 | impl RegistryError {
+    | ------------------ methods in this implementation
+...
+142 |   pub(crate) fn kind(&self) -> &RegistryErrorKind {
+    |                 ^^^^
+...
+146 |   pub(crate) fn command(&self) -> &str {
+    |                 ^^^^^^^
+
+warning: fields `allow` and `deny` are never read
+  --> src\commands\acl.rs:26:5
+   |
+22 |   Scoped {
+   |   ------ fields in this variant
+...
+26 |     allow: Vec<String>,
+   |     ^^^^^
+27 |     #[serde(default)]
+28 |     deny: Vec<String>,
+   |     ^^^^
+   |
+   = note: `PermissionEntry` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: variant `Paused` is never constructed
+  --> src\tray_icon.rs:22:3
+   |
+20 | pub enum TrayState {
+   |          --------- variant in this enum
+21 |   NotPlaying,
+22 |   Paused,
+   |   ^^^^^^
+
+warning: `app` (lib) generated 8 warnings (run `cargo fix --lib -p app` to apply 3 suggestions)
+    Finished `release` profile [optimized] target(s) in 2m 06s
+
+INFO: program built
+  1) "before all" hook in "{root}"
+
+  0 passing (2m)
+  1 failing
+
+  1) "before all" hook in "{root}":
+     SessionNotCreatedError: session not created: Microsoft Edge failed to start: crashed.
+  (session not created: DevToolsActivePort file doesn't exist)
+  (The process started from msedge location D:\gsb-auto\batches\batch-20260929-004\104-modern-desktop-app-templ\A\src-tauri\target\release\app.exe is no longer running, so msedgedriver is assuming that msedge has crashed.)
+      at Object.throwDecodedError (node_modules\.pnpm\selenium-webdriver@4.46.0\node_modules\selenium-webdriver\lib\error.js:523:15)
+      at parseHttpResponse (node_modules\.pnpm\selenium-webdriver@4.46.0\node_modules\selenium-webdriver\lib\http.js:527:13)
+      at Executor.execute (node_modules\.pnpm\selenium-webdriver@4.46.0\node_modules\selenium-webdriver\lib\http.js:459:28)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+
+
+
+ ELIFECYCLE  Command failed with exit code 1.

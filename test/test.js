@@ -60,8 +60,9 @@ async function dircmp(dir1, dir2) {
 
 // requires using function because of "this" usage
 before(async function () {
-  // set timeout to 2 minutes to allow the program to build if it needs to
-  this.timeout(120_000);
+  // set timeout to 20 minutes to allow the program to build if it needs to
+  // (a cold release build with lto takes several minutes on its own)
+  this.timeout(20 * 60_000);
 
   // ensure the frontend has been built
   const tmpDir = mkdtempSync(join(tmpdir(), 'vite-cache'));
@@ -72,7 +73,8 @@ before(async function () {
 
   console.log('INFO: building frontend');
   const pnpmCMD = onWindows ? 'pnpm.cmd' : 'pnpm';
-  const frontend_build_result = spawnSync(pnpmCMD, ['build'], { cwd: projectRoot, stdio: 'pipe', encoding: 'utf-8' });
+  // shell: true is required on Windows: Node blocks spawning .cmd shims directly
+  const frontend_build_result = spawnSync(pnpmCMD, ['build'], { cwd: projectRoot, stdio: 'pipe', encoding: 'utf-8', shell: true });
   console.log(frontend_build_result.stderr);
   if (frontend_build_result.error !== undefined) {
     console.log(frontend_build_result.error);
@@ -120,8 +122,8 @@ before(async function () {
 
 after(async () => {
   // stop the webdriver session and kill the webdriver
-  await driver.quit();
-  tauriDriver.kill();
+  if (driver) await driver.quit();
+  if (tauriDriver) tauriDriver.kill();
 });
 
 // Resources
